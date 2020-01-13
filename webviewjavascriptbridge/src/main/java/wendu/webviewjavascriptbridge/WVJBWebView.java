@@ -12,8 +12,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.Keep;
-import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -41,6 +39,9 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Keep;
+import androidx.appcompat.app.AlertDialog;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -64,8 +65,7 @@ public class WVJBWebView extends WebView {
     private static final int LOAD_URL_WITH_HEADERS = 3;
     private static final int HANDLE_MESSAGE = 4;
     MyHandler mainThreadHandler = null;
-    private JavascriptCloseWindowListener javascriptCloseWindowListener=null;
-
+    private JavascriptCloseWindowListener javascriptCloseWindowListener = null;
 
     class MyHandler extends Handler {
         //  Using WeakReference to avoid memory leak
@@ -133,7 +133,7 @@ public class WVJBWebView extends WebView {
     private Map<String, WVJBResponseCallback> responseCallbacks = null;
     private Map<String, WVJBHandler> messageHandlers = null;
     private long uniqueId = 0;
-    private boolean alertboxBlock=true;
+    private boolean alertboxBlock = true;
 
     public interface WVJBResponseCallback<T> {
         void onResult(T data);
@@ -146,43 +146,44 @@ public class WVJBWebView extends WebView {
 
     public interface JavascriptCloseWindowListener {
         /**
-         * @return  If true, close the current activity, otherwise, do nothing.
+         * @return If true, close the current activity, otherwise, do nothing.
          */
         boolean onClose();
     }
 
 
-    public interface WVJBHandler<T,R> {
+    public interface WVJBHandler<T, R> {
         void handler(T data, WVJBResponseCallback<R> callback);
     }
 
-    public void disableJavascriptAlertBoxSafetyTimeout(boolean disable){
-        alertboxBlock=!disable;
+    public void disableJavascriptAlertBoxSafetyTimeout(boolean disable) {
+        alertboxBlock = !disable;
     }
 
     public void callHandler(String handlerName) {
         callHandler(handlerName, null, null);
     }
 
-    public  void callHandler(String handlerName, Object data) {
+    public void callHandler(String handlerName, Object data) {
         callHandler(handlerName, data, null);
     }
 
-    public  <T> void callHandler(String handlerName, Object data,
-                            WVJBResponseCallback<T> responseCallback) {
+    public <T> void callHandler(String handlerName, Object data,
+                                WVJBResponseCallback<T> responseCallback) {
         sendData(data, responseCallback, handlerName);
     }
 
     /**
      * Test whether the handler exist in javascript
+     *
      * @param handlerName
      * @param callback
      */
-    public void hasJavascriptMethod(String handlerName, final WVJBMethodExistCallback callback){
+    public void hasJavascriptMethod(String handlerName, final WVJBMethodExistCallback callback) {
         callHandler("_hasJavascriptMethod", handlerName, new WVJBResponseCallback() {
             @Override
             public void onResult(Object data) {
-                callback.onResult((boolean)data);
+                callback.onResult((boolean) data);
             }
         });
     }
@@ -190,11 +191,11 @@ public class WVJBWebView extends WebView {
     /**
      * set a listener for javascript closing the current activity.
      */
-    public void setJavascriptCloseWindowListener( JavascriptCloseWindowListener listener){
-        javascriptCloseWindowListener=listener;
+    public void setJavascriptCloseWindowListener(JavascriptCloseWindowListener listener) {
+        javascriptCloseWindowListener = listener;
     }
 
-    public <T,R> void registerHandler(String handlerName, WVJBHandler<T,R> handler) {
+    public <T, R> void registerHandler(String handlerName, WVJBHandler<T, R> handler) {
         if (handlerName == null || handlerName.length() == 0 || handler == null) {
             return;
         }
@@ -355,8 +356,8 @@ public class WVJBWebView extends WebView {
         registerHandler("_closePage", new WVJBHandler() {
             @Override
             public void handler(Object data, WVJBResponseCallback callback) {
-                if(javascriptCloseWindowListener==null
-                        ||javascriptCloseWindowListener.onClose()){
+                if (javascriptCloseWindowListener == null
+                        || javascriptCloseWindowListener.onClose()) {
                     ((Activity) getContext()).onBackPressed();
                 }
             }
@@ -364,10 +365,10 @@ public class WVJBWebView extends WebView {
         registerHandler("_disableJavascriptAlertBoxSafetyTimeout", new WVJBHandler() {
             @Override
             public void handler(Object data, WVJBResponseCallback callback) {
-                disableJavascriptAlertBoxSafetyTimeout((boolean)data);
+                disableJavascriptAlertBoxSafetyTimeout((boolean) data);
             }
         });
-        if(Build.VERSION.SDK_INT>Build.VERSION_CODES.JELLY_BEAN){
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
             super.addJavascriptInterface(new Object() {
                 @Keep
                 @JavascriptInterface
@@ -378,7 +379,6 @@ public class WVJBWebView extends WebView {
 
             }, BRIDGE_NAME);
         }
-
     }
 
     private void _evaluateJavascript(String script) {
@@ -392,6 +392,7 @@ public class WVJBWebView extends WebView {
     /**
      * This method can be called in any thread, and if it is not called in the main thread,
      * it will be automatically distributed to the main thread.
+     *
      * @param script
      */
     public void evaluateJavascript(final String script) {
@@ -407,6 +408,7 @@ public class WVJBWebView extends WebView {
     /**
      * This method can be called in any thread, and if it is not called in the main thread,
      * it will be automatically distributed to the main thread.
+     *
      * @param url
      */
     @Override
@@ -419,6 +421,7 @@ public class WVJBWebView extends WebView {
     /**
      * This method can be called in any thread, and if it is not called in the main thread,
      * it will be automatically distributed to the main thread.
+     *
      * @param url
      * @param additionalHttpHeaders
      */
@@ -447,11 +450,9 @@ public class WVJBWebView extends WebView {
 
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
-
-            if(newProgress>80) {
+            if (newProgress > 80) {
                 try {
-                    InputStream is = view.getContext().getAssets()
-                            .open("WebViewJavascriptBridge.js");
+                    InputStream is = view.getContext().getResources().openRawResource(R.raw.webview_javascript_bridge);
                     int size = is.available();
                     byte[] buffer = new byte[size];
                     is.read(buffer);
@@ -461,7 +462,6 @@ public class WVJBWebView extends WebView {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
                 synchronized (WVJBWebView.this) {
                     if (startupMessageQueue != null) {
                         for (int i = 0; i < startupMessageQueue.size(); i++) {
@@ -565,7 +565,7 @@ public class WVJBWebView extends WebView {
 
         @Override
         public boolean onJsAlert(WebView view, String url, final String message, final JsResult result) {
-            if(!alertboxBlock){
+            if (!alertboxBlock) {
                 result.confirm();
             }
             if (webChromeClient != null) {
@@ -580,7 +580,7 @@ public class WVJBWebView extends WebView {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
-                            if(alertboxBlock) {
+                            if (alertboxBlock) {
                                 result.confirm();
                             }
                         }
@@ -593,7 +593,7 @@ public class WVJBWebView extends WebView {
         @Override
         public boolean onJsConfirm(WebView view, String url, String message,
                                    final JsResult result) {
-            if(!alertboxBlock){
+            if (!alertboxBlock) {
                 result.confirm();
             }
             if (webChromeClient != null && webChromeClient.onJsConfirm(view, url, message, result)) {
@@ -602,7 +602,7 @@ public class WVJBWebView extends WebView {
                 DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if(alertboxBlock) {
+                        if (alertboxBlock) {
                             if (which == Dialog.BUTTON_POSITIVE) {
                                 result.confirm();
                             } else {
@@ -625,15 +625,15 @@ public class WVJBWebView extends WebView {
         @Override
         public boolean onJsPrompt(WebView view, String url, final String message,
                                   String defaultValue, final JsPromptResult result) {
-            if(Build.VERSION.SDK_INT<=Build.VERSION_CODES.JELLY_BEAN){
-                String prefix="_wvjbxx";
-                if(message.equals(prefix)){
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN) {
+                String prefix = "_wvjbxx";
+                if (message.equals(prefix)) {
                     Message msg = mainThreadHandler.obtainMessage(HANDLE_MESSAGE, defaultValue);
                     mainThreadHandler.sendMessage(msg);
                 }
                 return true;
             }
-            if(!alertboxBlock){
+            if (!alertboxBlock) {
                 result.confirm();
             }
             if (webChromeClient != null && webChromeClient.onJsPrompt(view, url, message, defaultValue, result)) {
@@ -648,7 +648,7 @@ public class WVJBWebView extends WebView {
                 DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if(alertboxBlock) {
+                        if (alertboxBlock) {
                             if (which == Dialog.BUTTON_POSITIVE) {
                                 result.confirm(editText.getText().toString());
                             } else {
@@ -912,7 +912,6 @@ public class WVJBWebView extends WebView {
         public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
             if (webViewClient != null) {
                 webViewClient.onReceivedHttpError(view, request, errorResponse);
-                ;
             } else {
                 super.onReceivedHttpError(view, request, errorResponse);
             }
